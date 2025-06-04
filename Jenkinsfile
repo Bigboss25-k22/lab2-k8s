@@ -219,45 +219,6 @@ pipeline {
             }
         }
         
-        stage('Update Helm Charts') {
-            steps {
-                script {
-                    echo "Checking if there are services to update..."
-                    
-                    if (env.SERVICE_NAMES == null || env.SERVICE_NAMES.trim() == '') {
-                        echo "No services to update. Skipping Helm chart update."
-                    } else {
-                        def serviceNames = env.SERVICE_NAMES.split(',')
-                        def imageTags = env.IMAGE_TAGS.split(',')
-                        
-                        if (serviceNames.size() != imageTags.size()) {
-                            error "Mismatch between service names and image tags!"
-                        }
-                        
-                        echo "Validating services: ${env.SERVICE_NAMES}"
-                        echo "With tags: ${env.IMAGE_TAGS}"
-                        
-                        // Kiểm tra xem có service nào để cập nhật không
-                        if (serviceNames.size() > 0) {
-                            echo "Updating Helm charts for these services: ${env.SERVICE_NAMES}"
-                            
-                            // Kích hoạt job nhưng không chờ nó hoàn thành
-                            build job: 'k8s_update_helm', 
-                                wait: false,
-                                parameters: [
-                                    string(name: 'SERVICE_NAMES', value: env.SERVICE_NAMES),
-                                    string(name: 'IMAGE_TAGS', value: env.IMAGE_TAGS)
-                                ]
-                            
-                            echo "Triggered Helm update job - continuing without waiting"
-                        } else {
-                            echo "No services to update. Skipping Helm chart update."
-                        }
-                    }
-                }
-            }
-        }
-        
         stage('Cleanup') {
             steps {
                 script {
